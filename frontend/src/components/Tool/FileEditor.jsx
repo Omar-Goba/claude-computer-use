@@ -1,1 +1,7 @@
-// Component for displaying file edit tool results
+import React from 'react';
+
+const FileEditor = ({ content }) => {
+  return <pre className="file-editor">{content}</pre>;
+};
+
+export default FileEditor;
