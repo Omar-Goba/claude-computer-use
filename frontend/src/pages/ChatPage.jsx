@@ -10,7 +10,7 @@ import { useChat } from '../context/ChatContext';
 function ChatPage() {
   const [sidebarVisible, setSidebarVisible] = useState(true);
   const [activeTab, setActiveTab] = useState('api');
-  const { currentSession, error } = useChat();
+  const { currentSession, error, isLoading } = useChat();
 
   const toggleSidebar = () => {
     setSidebarVisible(!sidebarVisible);
@@ -83,7 +83,7 @@ function ChatPage() {
             </button>
           </div>
           
-          <div className="sidebar-content">
+          <div className={`sidebar-content ${isLoading ? 'loading' : ''}`}>
             {renderActiveTab()}
           </div>
         </div>
@@ -98,7 +98,7 @@ function ChatPage() {
             </div>
           )}
           
-          <div className="chat-area">
+          <div className={`chat-area ${isLoading ? 'loading' : ''}`}>
             <MessageList />
           </div>
           
