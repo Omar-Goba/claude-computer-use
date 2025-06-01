@@ -96,3 +96,7 @@ Screenshots are taken at high resolution but should be displayed at XGA (1024x76
 - Implement proper warnings about computer use risks
 - Validate all user inputs before API submission
 - Sanitize tool outputs for safe HTML rendering
+
+## Best Practices
+
+- Always end your job with a commit if applicable
