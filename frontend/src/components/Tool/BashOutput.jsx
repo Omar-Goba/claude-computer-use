@@ -1,0 +1,1 @@
+// Component for displaying bash command outputs

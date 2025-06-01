@@ -1,0 +1,1 @@
+// Component for tool version and configuration settings

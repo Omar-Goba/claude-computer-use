@@ -1,0 +1,1 @@
+// Component for displaying computer tool screenshots

@@ -1,0 +1,1 @@
+// Custom hook for API communication with Anthropic services

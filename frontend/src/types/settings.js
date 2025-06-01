@@ -1,0 +1,1 @@
+// Type definitions for application settings and configuration

@@ -1,0 +1,1 @@
+// Component for the chat input field where users type messages

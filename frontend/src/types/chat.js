@@ -1,0 +1,1 @@
+// Type definitions for chat messages and conversation state

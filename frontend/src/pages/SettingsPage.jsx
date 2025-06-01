@@ -1,0 +1,1 @@
+// Dedicated settings page component (if needed)
