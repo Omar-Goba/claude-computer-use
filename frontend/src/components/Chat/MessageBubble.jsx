@@ -22,8 +22,8 @@ function MessageBubble({ message }) {
     });
   };
 
-  const renderToolResult = (toolResult, index) => {
-    const key = `${message.id}-tool-${index}`;
+  const renderToolResult = (toolResult, randomKey) => {
+    const key = `${message.id}-tool-${randomKey}`;
     
     switch (toolResult.type) {
       case 'computer':
@@ -87,7 +87,7 @@ function MessageBubble({ message }) {
         <div className="message-content">
           <div className="message-text">
             {message.content.split('\n').map((line, index) => (
-              <React.Fragment key={index}>
+              <React.Fragment key={`${message.id}-line-${index}`}>
                 {line}
                 {index < message.content.split('\n').length - 1 && <br />}
               </React.Fragment>
@@ -114,7 +114,7 @@ function MessageBubble({ message }) {
           {toolResultsVisible && (
             <div className="tool-results">
               {message.toolResults.map((toolResult, index) => 
-                renderToolResult(toolResult, index)
+                renderToolResult(toolResult, Math.random().toString(36).substr(2, 9))
               )}
             </div>
           )}

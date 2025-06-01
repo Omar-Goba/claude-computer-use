@@ -1,7 +1,37 @@
-import React, { createContext, useContext, useReducer, useEffect } from 'react';
+import React, { createContext, useContext, useReducer, useEffect, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
-const ChatContext = createContext();
+// Configuration constants
+const MAX_MESSAGES_PER_SESSION = 50;
+const MAX_MESSAGE_AGE_DAYS = 7;
+const MAX_TOOL_RESULTS_PER_MESSAGE = 5;
+const MAX_BASE64_IMAGE_SIZE = 500 * 1024; // 500 KB
+
+// Utility function to prune messages
+const pruneMessages = (messages) => {
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - MAX_MESSAGE_AGE_DAYS);
+
+  return messages
+    .filter(msg => new Date(msg.timestamp) >= sevenDaysAgo)
+    .slice(-MAX_MESSAGES_PER_SESSION)
+    .map(msg => {
+      // Prune large base64 images
+      if (msg.toolResults) {
+        msg.toolResults = msg.toolResults.map(toolResult => {
+          if (
+            toolResult.type === 'computer' && 
+            toolResult.result?.base64_image && 
+            toolResult.result.base64_image.length > MAX_BASE64_IMAGE_SIZE
+          ) {
+            delete toolResult.result.base64_image;
+          }
+          return toolResult;
+        }).slice(0, MAX_TOOL_RESULTS_PER_MESSAGE);
+      }
+      return msg;
+    });
+};
 
 const initialState = {
   messages: [],
@@ -36,29 +66,6 @@ const sampleMessages = [
         }
       }
     ]
-  },
-  {
-    id: uuidv4(),
-    type: 'user',
-    content: 'Can you run ls command to show me the files in the current directory?',
-    timestamp: new Date().toISOString()
-  },
-  {
-    id: uuidv4(),
-    type: 'assistant',
-    content: 'I\'ll run the ls command to show you the files in the current directory.',
-    timestamp: new Date().toISOString(),
-    toolResults: [
-      {
-        type: 'bash',
-        command: 'ls',
-        result: {
-          stdout: 'README.md\npackage.json\nsrc/\npublic/\nnode_modules/\nvite.config.js',
-          stderr: '',
-          exit_code: 0
-        }
-      }
-    ]
   }
 ];
 
@@ -80,20 +87,11 @@ function chatReducer(state, action) {
         )
       };
     case 'SET_LOADING':
-      return {
-        ...state,
-        isLoading: action.loading
-      };
+      return { ...state, isLoading: action.loading };
     case 'SET_STREAMING':
-      return {
-        ...state,
-        isStreaming: action.streaming
-      };
+      return { ...state, isStreaming: action.streaming };
     case 'SET_PENDING_MESSAGE':
-      return {
-        ...state,
-        pendingMessage: action.message
-      };
+      return { ...state, pendingMessage: action.message };
     case 'SET_ERROR':
       return {
         ...state,
@@ -102,15 +100,9 @@ function chatReducer(state, action) {
         isStreaming: false
       };
     case 'CLEAR_ERROR':
-      return {
-        ...state,
-        error: null
-      };
+      return { ...state, error: null };
     case 'SET_TOOL_EXECUTION_STATE':
-      return {
-        ...state,
-        toolExecutionState: action.state
-      };
+      return { ...state, toolExecutionState: action.state };
     case 'RESET_CHAT':
       return {
         ...initialState,
@@ -122,10 +114,7 @@ function chatReducer(state, action) {
         messages: sampleMessages
       };
     case 'SCROLL_HANDLED':
-      return {
-        ...state,
-        scrollToBottom: false
-      };
+      return { ...state, scrollToBottom: false };
     case 'NEW_SESSION':
       return {
         ...initialState,
@@ -142,17 +131,47 @@ export function ChatProvider({ children }) {
     currentSession: uuidv4()
   });
 
+  // Persist messages with pruning
+  const persistMessages = useCallback((messages) => {
+    const prunedMessages = pruneMessages(messages);
+    
+    try {
+      // Store messages for current session
+      localStorage.setItem(
+        `computer-use-messages-${state.currentSession}`, 
+        JSON.stringify(prunedMessages)
+      );
+    } catch (error) {
+      console.warn('Failed to save messages to localStorage:', error);
+      // If storage is full, try clearing some older sessions
+      Object.keys(localStorage)
+        .filter(key => key.startsWith('computer-use-messages-'))
+        .sort((a, b) => {
+          const getTimestamp = (key) => {
+            const sessionMessages = JSON.parse(localStorage.getItem(key) || '[]');
+            return sessionMessages.length > 0 
+              ? new Date(sessionMessages[0].timestamp).getTime() 
+              : 0;
+          };
+          return getTimestamp(a) - getTimestamp(b);
+        })
+        .slice(0, -5) // Keep the 5 most recent sessions
+        .forEach(key => localStorage.removeItem(key));
+    }
+  }, [state.currentSession]);
+
+  // Load messages on mount
   useEffect(() => {
-    const savedMessages = localStorage.getItem('computer-use-messages');
+    const savedMessages = localStorage.getItem(`computer-use-messages-${state.currentSession}`);
     if (savedMessages) {
       try {
         const parsed = JSON.parse(savedMessages);
-        if (parsed.length === 0) {
-          dispatch({ type: 'LOAD_SAMPLE_MESSAGES' });
-        } else {
+        if (parsed.length > 0) {
           parsed.forEach(message => {
             dispatch({ type: 'ADD_MESSAGE', message });
           });
+        } else {
+          dispatch({ type: 'LOAD_SAMPLE_MESSAGES' });
         }
       } catch (error) {
         console.warn('Failed to load messages from localStorage:', error);
@@ -161,13 +180,14 @@ export function ChatProvider({ children }) {
     } else {
       dispatch({ type: 'LOAD_SAMPLE_MESSAGES' });
     }
-  }, []);
+  }, [state.currentSession]);
 
+  // Save messages whenever they change
   useEffect(() => {
     if (state.messages.length > 0) {
-      localStorage.setItem('computer-use-messages', JSON.stringify(state.messages));
+      persistMessages(state.messages);
     }
-  }, [state.messages]);
+  }, [state.messages, persistMessages]);
 
   const addMessage = (message) => {
     const newMessage = {
@@ -225,14 +245,14 @@ export function ChatProvider({ children }) {
   };
 
   const resetChat = () => {
+    localStorage.removeItem(`computer-use-messages-${state.currentSession}`);
     dispatch({ type: 'RESET_CHAT' });
-    localStorage.removeItem('computer-use-messages');
     dispatch({ type: 'LOAD_SAMPLE_MESSAGES' });
   };
 
   const newSession = () => {
     dispatch({ type: 'NEW_SESSION' });
-    localStorage.removeItem('computer-use-messages');
+    localStorage.removeItem(`computer-use-messages-${state.currentSession}`);
   };
 
   const updateLastMessage = (updates) => {

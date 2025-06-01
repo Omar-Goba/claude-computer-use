@@ -6,132 +6,43 @@ This plan outlines the complete implementation of the React frontend for the Ant
 
 ## Current Status
 
-✅ **Infrastructure Setup**
-- Basic Vite + React project structure
-- Component folder organization in place
-- Basic dependencies (React 19, Vite, ESLint)
-
-❌ **Implementation Status**
-- All components are placeholder files (only comments)
-- No actual functionality implemented
-- Missing key dependencies for HTTP, state management
-- No API integration or tool rendering
+✅ **Implementation Status**
+- Basic Vite + React project structure complete
+- All core components implemented
+- API integration and tool rendering in place
+- State management and HTTP utilities configured
 
 ## Implementation Phases
 
-### Phase 1: Foundation & Dependencies (Priority: Critical)
-**Goal**: Set up core infrastructure and basic UI structure
+### Phase 4: UI Clean Up and Redesign
+**Goal**: Improve UI consistency and user experience
 
-#### 1.1 Package Dependencies ✅
-**Completed packages:**
-```bash
-npm install axios          # HTTP client for API calls
-npm install uuid          # Generate unique IDs for messages
-npm install prism-react-renderer  # Syntax highlighting for code
-npm install react-router-dom      # Client-side routing
-```
+#### 4.1 Component Review and Cleanup
+**Components to Review:**
+- Chat/MessageBubble.jsx: Improve message styling and layout
+- Chat/MessageInput.jsx: Enhance input UX and validation
+- Chat/MessageList.jsx: Better scroll behavior and loading states
+- Common/: Review and standardize all common components
 
-#### 1.2 Common UI Components
-**Files to implement:**
-- `src/components/Common/Button.jsx` - Reusable button with variants
-- `src/components/Common/Input.jsx` - Text input with validation states
-- `src/components/Common/Toggle.jsx` - Checkbox/toggle for settings
-- `src/components/Common/Modal.jsx` - Modal dialogs for confirmations
+#### 4.2 Main Page Structure
+**Layout Updates:**
+- Implement proper grid system
+- Fix sidebar responsiveness
+- Standardize spacing and alignments
+- Add proper loading states
 
-**UI Requirements:**
-- Consistent design system with button variants (primary, secondary, danger)
-- Input components with validation states (error, success, disabled)
-- Toggle switches for boolean settings
-- Modal dialogs for confirmations and forms
+#### 4.3 Component-Specific Improvements
+**Tool Components:**
+- ScreenshotViewer.jsx: Better image handling and controls
+- BashOutput.jsx: Improved code formatting and copy functionality
+- FileEditor.jsx: Enhanced editing experience
 
-#### 1.3 Basic Context Providers (UI State Only)
-**Files to implement:**
-- `src/context/SettingsContext.js` - UI preferences and local state management  
-- `src/context/ChatContext.js` - Message display state and UI interactions
+**Sidebar Components:**
+- APISettings.jsx: Cleaner form layout
+- ModelSettings.jsx: Improved parameter controls
+- ToolSettings.jsx: Better organization of options
 
-**Initial Features (No API Integration):**
-- localStorage for UI preferences only
-- Mock data structures for chat messages
-- Basic state management for UI interactions
-- No API validation or external calls
-
-### Phase 2: Chat Interface & Layout (Priority: High)
-**Goal**: Build complete UI with mock data, no API integration
-
-#### 2.1 Chat Interface Components
-**Files to implement:**
-- `src/components/Chat/MessageList.jsx` - Conversation display with scrolling
-- `src/components/Chat/MessageBubble.jsx` - Individual message rendering
-- `src/components/Chat/MessageInput.jsx` - User input with send functionality
-
-**Mock Message Rendering:**
-- User messages: Simple text display
-- Assistant messages: Text blocks with mock responses
-- Mock tool results: Placeholder renderers for screenshots, bash output, file edits
-- Local state for message history (no persistence yet)
-
-#### 2.2 Sidebar Configuration UI
-**Files to implement:**
-- `src/components/Sidebar/APISettings.jsx` - Settings form UI only
-- `src/components/Sidebar/ModelSettings.jsx` - Parameter controls UI only
-- `src/components/Sidebar/ToolSettings.jsx` - Tool preference controls
-
-**UI-Only Features:**
-- Form controls for API provider selection (no validation)
-- Model parameter sliders and inputs (no API calls)
-- Tool version selector dropdowns
-- Screenshot management toggles
-- All settings stored in local state only
-
-#### 2.3 Layout & Navigation
-**Files to implement:**
-- `src/pages/ChatPage.jsx` - Main interface layout
-- `src/pages/SettingsPage.jsx` - Settings page layout
-- Updated `src/App.jsx` - Router setup and main app structure
-
-**Layout Requirements:**
-- Responsive sidebar + chat area layout
-- Navigation between chat and settings pages
-- Mobile-friendly responsive design
-- Basic CSS styling and component organization
-
-### Phase 3: Tool Result Renderers (Priority: High)
-**Goal**: Build tool UI components with mock data
-
-#### 3.1 Mock Tool Result Renderers
-**Files to implement:**
-- `src/components/Tool/ScreenshotViewer.jsx` - Image display component
-- `src/components/Tool/BashOutput.jsx` - Code block with syntax highlighting
-- `src/components/Tool/FileEditor.jsx` - File content display component
-
-**Mock Tool Features:**
-
-**Screenshot Viewer:**
-- Display sample screenshots/images
-- Toggle visibility controls
-- Responsive image scaling
-- No coordinate interaction yet
-
-**Bash Output:**
-- Syntax highlighted code blocks using prism-react-renderer
-- Sample command/output display
-- Copy to clipboard functionality
-- No real command execution
-
-**File Editor:**
-- Text content display with line numbers
-- Mock file editing interface
-- Sample file content display
-- No actual file operations
-
-#### 3.2 Integration with Chat Interface
-**Requirements:**
-- Integrate tool renderers into MessageBubble component
-- Mock tool result data structures
-- Tool type routing to appropriate renderer
-- Basic error states and loading placeholders
-
-### Phase 4: API Integration & Real Functionality (Priority: Medium)
+### Phase 5: API Integration & Real Functionality (Priority: Medium)
 **Goal**: Connect UI to actual APIs and services
 
 #### 4.1 Service Layer Implementation
